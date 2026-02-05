@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { CreateUnitInput, UnitSchema } from '../types/unit';
 import { StatSlider } from './StatSlider';
 
@@ -8,13 +8,46 @@ interface Props {
   onCancel: () => void;
 }
 
+
 export const UnitForm = ({ onSubmit, initialData, onCancel }: Props) => {
+  const BASE_STAT_ORDER = ['life', 'mind', 'intensity', 'control', 'speed', 'mobility'];
+  const GROWTH_STAT_ORDER = ['life', 'mind', 'intensity', 'control', 'speed'];
+
+  const updateBaseStat = useCallback((key: string, val: number) => {
+    setUnit(prev => ({
+      ...prev,
+      base_stat: { ...prev.base_stat, [key]: val }
+    }));
+  }, []);
+  const updateGrowthStat = useCallback((key: string, val: number) => {
+    setUnit(prev => ({
+      ...prev,
+      growth_stat: { ...prev.growth_stat, [key]: val }
+    }));
+  }, []);
+
   const [unit, setUnit] = useState<CreateUnitInput>({
     id: '',
-    base_stat: { life: 100, mind: 50, intensity: 10, suppression: 10, speed: 5, mobility: 3 },
-    growth_stat: { life: 5, mind: 2 }
+    base_stat: { life: 100, mind: 50, intensity: 10, control: 10, speed: 5, mobility: 3 },
+    growth_stat: { life: 0, mind: 0, intensity: 0, control: 0, speed:0 }
   });
-
+  const STAT_LIMITS = {
+    base: {
+      life: 100,      // 체력은 크게
+      mind: 100,
+      intensity: 100,
+      control: 100,
+      speed: 100,       // 속도는 정밀하게
+      mobility: 20
+    },
+    growth: {
+      life: 100,        // 성장치는 상대적으로 낮게
+      mind: 100,
+      intensity: 100,
+      control: 100,
+      speed: 100
+    }
+  };
   useEffect(() => { if (initialData) setUnit(initialData); }, [initialData]);
 
   return (
@@ -43,15 +76,33 @@ export const UnitForm = ({ onSubmit, initialData, onCancel }: Props) => {
         </div>
 
         <div className="pt-4">
-          <p className="text-[10px] text-cyan-900 font-bold mb-4 uppercase">/// Synchronization_Parameters</p>
-          {Object.entries(unit.base_stat).map(([key, val]) => (
-            <StatSlider 
-              key={key} 
+          <p className="text-[10px] text-cyan-900 font-bold mb-4 uppercase">/// Base Parameters</p>
+          {BASE_STAT_ORDER.map((key) => {
+            const val = unit.base_stat[key as keyof typeof unit.base_stat];
+            if (val === undefined) return null;
+            return(<StatSlider 
+              key={`base-${key}`} 
               label={key} 
-              value={val as number} 
-              onChange={(v) => setUnit({...unit, base_stat: {...unit.base_stat, [key]: v}})} 
-            />
-          ))}
+              value={val} 
+              max={STAT_LIMITS.base[key as keyof typeof STAT_LIMITS.base] || 100}
+              onChange={(v) => updateBaseStat(key, v)}
+            />)
+          })}
+        </div>
+
+        <div className="pt-8 border-t border-slate-900 mt-4">
+          <p className="text-[10px] text-yellow-900 font-bold mb-4 uppercase">/// Growth Parameters</p>
+          {GROWTH_STAT_ORDER.map((key) => {
+            const val = unit.growth_stat[key as keyof typeof unit.growth_stat];
+            if (val === undefined) return null;
+            return(<StatSlider 
+              key={`growth-${key}`} 
+              label={`GR_${key}`} 
+              value={val} 
+              max={STAT_LIMITS.growth[key as keyof typeof STAT_LIMITS.growth] || 100}
+              onChange={(v) => updateGrowthStat(key, v)}
+            />)
+          })}
         </div>
       </div>
 

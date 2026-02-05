@@ -67,10 +67,19 @@ function App() {
               </div>
               
               <div className="space-y-2">
+                <p className="text-[10px] text-cyan-900 font-bold mb-4 uppercase">/// Base Stat</p>
                 {Object.entries(u.base_stat).slice(0, 5).map(([k, v]) => (
                   <div key={k} className="flex justify-between items-center text-xs">
                     <span className="text-gray-600 uppercase tracking-wider text-[10px]">{k}</span>
                     <span className="text-gray-300 font-mono">{v}</span>
+                  </div>
+                ))}
+                <hr/>
+                <p className="text-[10px] text-cyan-900 font-bold mb-4 uppercase">/// Growth Stat</p>
+                {Object.entries(u.growth_stat).slice(0, 5).map(([k, v]) => (
+                  <div key={k} className="flex justify-between items-center text-xs">
+                    <span className="text-gray-600 uppercase tracking-wider text-[10px]">{k}</span>
+                    <span className="text-gray-300 font-mono">{v}%</span>
                   </div>
                 ))}
               </div>
